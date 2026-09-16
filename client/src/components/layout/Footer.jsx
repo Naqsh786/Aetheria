@@ -1,25 +1,51 @@
-﻿import { Mail, MapPin, Camera, MessageCircle, Briefcase, Globe } from "lucide-react";
+import { memo } from 'react';
+import { Mail, MapPin, Camera, MessageCircle, Briefcase, Globe } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { FooterBackgroundGradient, TextHoverEffect } from "../ui/hover-footer";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  // Same-page section pe smooth scroll, cross-page pe navigate + scroll.
+  // mailto:/http links untouched chhorte hain (browser handle karega).
+  const goTo = (path, hash) => (e) => {
+    if (!path.startsWith("/")) return;
+    e.preventDefault();
+    if (hash) {
+      const scrollTo = () => {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+        else setTimeout(scrollTo, 50);
+      };
+      if (window.location.pathname === path) {
+        scrollTo();
+      } else {
+        navigate(path);
+        setTimeout(scrollTo, 100);
+      }
+    } else if (window.location.pathname !== path) {
+      navigate(path);
+    }
+  };
+
   const footerLinks = [
     {
       title: "Explore",
       links: [
-        { label: "Work", href: "#" },
-        { label: "Services", href: "#" },
-        { label: "About", href: "#" },
-        { label: "Process", href: "#" },
+        { label: "Work", href: "/#work" },
+        { label: "Services", href: "/services" },
+        { label: "About", href: "/#about" },
+        { label: "Process", href: "/#process" },
       ],
     },
     {
       title: "Connect",
       links: [
-        { label: "Careers", href: "#" },
-        { label: "Contact", href: "#" },
+        { label: "Careers", href: "mailto:hello@aetheriatech.com?subject=Careers%20at%20Aetheria" },
+        { label: "Contact", href: "/contact" },
         {
           label: "Start a Project",
-          href: "#",
+          href: "/contact",
           pulse: true,
         },
       ],
@@ -39,10 +65,10 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: <Briefcase size={20} />, label: "LinkedIn", href: "#" },
-    { icon: <Camera size={20} />, label: "Instagram", href: "#" },
-    { icon: <MessageCircle size={20} />, label: "Twitter", href: "#" },
-    { icon: <Globe size={20} />, label: "Website", href: "#" },
+    { icon: <Briefcase size={20} />, label: "LinkedIn", href: "https://www.linkedin.com/company/aetheriatech" },
+    { icon: <Camera size={20} />, label: "Instagram", href: "https://www.instagram.com/aetheriatech" },
+    { icon: <MessageCircle size={20} />, label: "Twitter", href: "https://twitter.com/aetheriatech" },
+    { icon: <Globe size={20} />, label: "Website", href: "/" },
   ];
 
   return (
@@ -79,20 +105,24 @@ const Footer = () => {
                   {section.title}
                 </h4>
                 <ul className="space-y-4">
-                  {section.links.map((link) => (
-                    <li key={link.label} className="relative w-fit">
-                      <a
-                        href={link.href}
-                        className="text-base text-gray-200 hover:text-brand-accent transition-colors duration-300 font-medium flex items-center gap-2 group"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-brand-accent/30 group-hover:bg-brand-accent transition-colors" />
-                        {link.label}
-                      </a>
-                      {link.pulse && (
-                        <span className="absolute top-1 -right-4 w-2.5 h-2.5 shape-diamond bg-brand-accent animate-pulse"></span>
-                      )}
-                    </li>
-                  ))}
+                  {section.links.map((link) => {
+                    const [path, hash] = link.href.split("#");
+                    return (
+                      <li key={link.label} className="relative w-fit">
+                        <a
+                          href={link.href}
+                          onClick={goTo(path || "/", hash ? `#${hash}` : undefined)}
+                          className="text-base text-gray-200 hover:text-brand-accent transition-colors duration-300 font-medium flex items-center gap-2 group"
+                        >
+                          <span className="w-1 h-1 rounded-full bg-brand-accent/30 group-hover:bg-brand-accent transition-colors" />
+                          {link.label}
+                        </a>
+                        {link.pulse && (
+                          <span className="absolute top-1 -right-4 w-2.5 h-2.5 shape-diamond bg-brand-accent animate-pulse"></span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
@@ -131,16 +161,20 @@ const Footer = () => {
           {/* Footer bottom */}
           <div className="flex flex-col md:flex-row justify-between items-center text-base space-y-4 md:space-y-0">
             <div className="flex space-x-6 text-gray-200">
-              {socialLinks.map(({ icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="hover:text-brand-accent transition-all hover:scale-110 duration-300 hover:drop-shadow-[0_0_8px_rgba(216,180,226,0.5)]"
-                >
-                  {icon}
-                </a>
-              ))}
+              {socialLinks.map(({ icon, label, href }) => {
+                const external = href.startsWith("http");
+                return (
+                  <a
+                    key={label}
+                    href={href}
+                    {...(external ? { target: "_blank", rel: "noopener noreferrer" } : { onClick: goTo("/") })}
+                    aria-label={label}
+                    className="hover:text-brand-accent transition-all hover:scale-110 duration-300 hover:drop-shadow-[0_0_8px_rgba(216,180,226,0.5)]"
+                  >
+                    {icon}
+                  </a>
+                );
+              })}
             </div>
 
             <p className="text-center md:text-left text-gray-200 font-medium">
@@ -160,4 +194,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default memo(Footer);

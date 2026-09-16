@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import RibbonDecorations from '../ui/RibbonDecorations';
@@ -114,4 +114,4 @@ const StatsRow = () => {
   );
 };
 
-export default StatsRow;
+export default memo(StatsRow);

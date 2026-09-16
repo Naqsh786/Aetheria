@@ -1,4 +1,5 @@
-﻿import {
+import { useState, memo } from 'react';
+import {
   SiFigma,
   SiHtml5,
   SiCss,
@@ -17,11 +18,11 @@
   SiGreensock,
   SiBlender,
   SiGooglegemini,
-  SiAnthropic, // For Claude
+  SiAnthropic,
   SiZapier,
   SiMake,
   SiGoogleads,
-  SiMeta, // For Meta Ads
+  SiMeta,
   SiGoogleanalytics
 } from 'react-icons/si';
 
@@ -96,7 +97,7 @@ const techCategories = [
     name: 'MARKETING & GROWTH',
     items: [
       { name: 'SEO', icon: TbSeo },
-      { name: 'AEO', icon: TbSeo }, // Using SEO icon for AEO (Answer Engine Optimization)
+      { name: 'AEO', icon: TbSeo },
       { name: 'Google Ads', icon: SiGoogleads },
       { name: 'Meta Ads', icon: SiMeta },
       { name: 'Social Media', icon: TbChartArrows },
@@ -107,9 +108,47 @@ const techCategories = [
   }
 ];
 
-// Create a single flattened list of elements to render in the marquee
-const MarqueeContent = () => (
-  <div className="flex animate-marquee shrink-0 items-center gap-12 pr-12">
+const TechMarquee = () => {
+  const [paused, setPaused] = useState(false);
+
+  return (
+    <div className="relative w-full overflow-hidden bg-brand-bg z-10">
+      {/* Wave top */}
+      <div className="absolute top-0 left-0 w-full h-4 z-20 pointer-events-none">
+        <svg viewBox="0 0 1440 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M0 16L1440 16L1440 4C1200 10 960 0 720 6C480 12 240 2 0 8Z" fill="var(--color-section-plum)" fillOpacity="0.3" />
+        </svg>
+      </div>
+
+      <section
+        className="relative w-full py-8 overflow-hidden border-y border-brand-accent/15"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-brand-bg to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-brand-bg to-transparent z-10 pointer-events-none"></div>
+
+        <div className="flex w-full overflow-hidden whitespace-nowrap">
+          <MarqueeContent paused={paused} />
+          <MarqueeContent paused={paused} />
+        </div>
+      </section>
+
+      {/* Wave bottom */}
+      <div className="absolute bottom-0 left-0 w-full h-4 z-20 pointer-events-none">
+        <svg viewBox="0 0 1440 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
+          <path d="M0 0L1440 0L1440 12C1200 6 960 16 720 10C480 4 240 14 0 8Z" fill="var(--color-section-plum)" fillOpacity="0.3" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+const MarqueeContent = ({ paused }) => (
+  <div
+    className="flex animate-marquee shrink-0 items-center gap-12 pr-12"
+    style={{ animationPlayState: paused ? 'paused' : 'running' }}
+  >
     {techCategories.map((category, catIndex) => (
       <div key={`cat-${catIndex}`} className="flex items-center gap-12">
         {/* Category Header Element */}
@@ -134,41 +173,11 @@ const MarqueeContent = () => (
           ))}
         </div>
 
-        {/* Divider dot between categories (optional, but looks nice) */}
+        {/* Divider dot between categories */}
         <div className="w-1.5 h-1.5 rounded-full bg-brand-border mx-2"></div>
       </div>
     ))}
   </div>
 );
 
-const TechMarquee = () => {
-  return (
-    <div className="relative w-full overflow-hidden bg-brand-bg z-10">
-      {/* Wave top */}
-      <div className="absolute top-0 left-0 w-full h-4 z-20 pointer-events-none">
-        <svg viewBox="0 0 1440 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
-          <path d="M0 16L1440 16L1440 4C1200 10 960 0 720 6C480 12 240 2 0 8Z" fill="var(--color-section-plum)" fillOpacity="0.3" />
-        </svg>
-      </div>
-
-      <section className="relative w-full py-8 overflow-hidden border-y border-brand-accent/15">
-        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-brand-bg to-transparent z-10 pointer-events-none"></div>
-        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-brand-bg to-transparent z-10 pointer-events-none"></div>
-
-        <div className="flex w-full overflow-hidden whitespace-nowrap">
-          <MarqueeContent />
-          <MarqueeContent />
-        </div>
-      </section>
-
-      {/* Wave bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-4 z-20 pointer-events-none">
-        <svg viewBox="0 0 1440 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" preserveAspectRatio="none">
-          <path d="M0 0L1440 0L1440 12C1200 6 960 16 720 10C480 4 240 14 0 8Z" fill="var(--color-section-plum)" fillOpacity="0.3" />
-        </svg>
-      </div>
-    </div>
-  );
-};
-
-export default TechMarquee;
+export default memo(TechMarquee);

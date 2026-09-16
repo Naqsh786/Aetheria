@@ -1,7 +1,5 @@
 import { useRef, useEffect, lazy, Suspense } from 'react';
 import gsap from 'gsap';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
 import Hero from '../components/hero/Hero';
 import TechMarquee from '../components/sections/TechMarquee';
 import MarqueeBand from '../components/ui/MarqueeBand';
@@ -41,8 +39,6 @@ const HomePage = () => {
 
   return (
     <div ref={pageRef} className="relative w-full overflow-hidden">
-      <Navbar />
-
       <div className="page-blob absolute top-[30%] left-[2%] w-72 h-72 bg-brand-accent/5 shape-blob blur-[100px] pointer-events-none z-0" />
 
       <main>
@@ -64,7 +60,6 @@ const HomePage = () => {
           <CTA />
         </Suspense>
       </main>
-      <Footer />
     </div>
   );
 };

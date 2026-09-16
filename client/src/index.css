@@ -39,6 +39,11 @@
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-12px); }
   }
+
+  @keyframes lineShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
 }
 
 /* Section color system: deep tonal shifts keep the dark theme dimensional. */

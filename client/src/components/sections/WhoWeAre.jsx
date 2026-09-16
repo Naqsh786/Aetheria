@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowUpRight } from 'lucide-react';
@@ -199,7 +199,7 @@ const WhoWeAre = () => {
         <div ref={headingRef} className="max-w-5xl">
           <div className="section-title-kdm mb-10">
             <h2 className="text-[2rem] md:text-[2.5rem] lg:text-[3.2rem] font-display font-bold leading-[1.05] text-brand-text">
-              Who We Are
+              Who We Are ?
             </h2>
           </div>
 
@@ -352,4 +352,4 @@ const WhoWeAre = () => {
   );
 };
 
-export default WhoWeAre;
+export default memo(WhoWeAre);

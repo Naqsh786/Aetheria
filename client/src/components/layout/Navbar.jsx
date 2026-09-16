@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 
 const NAV_LINKS = [
-  { label: 'Home', href: '#home' },
-  { label: 'Services', href: '#services' },
-  { label: 'Work', href: '#work' },
-  { label: 'Process', href: '#process' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Home', href: '/' },
+  { label: 'Services', href: '/services' },
+  { label: 'Work', href: '/#work' },
+  { label: 'Process', href: '/#process' },
+  { label: 'Contact', href: '/contact' },
 ];
 
 const LiquidGlassNavbar = () => {
@@ -15,9 +16,11 @@ const LiquidGlassNavbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [onLight, setOnLight] = useState(false);
   const navRef = useRef(null);
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   useEffect(() => {
-    const NAV_PROBE_Y = 44; // vertical center of the fixed navbar
+    const NAV_PROBE_Y = 44;
     let raf = null;
 
     const check = () => {
@@ -49,13 +52,12 @@ const LiquidGlassNavbar = () => {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+
+  // Mobile menu auto-closes via onClick handlers on each link
 
   return (
     <>
@@ -64,7 +66,7 @@ const LiquidGlassNavbar = () => {
         ref={navRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', bounce: 0.15, duration: 0.6, delay: 0.3 }}
+        transition={{ type: 'spring', bounce: 0.15, duration: 0.6, delay: isHome ? 0.3 : 0 }}
         className={cn(
           'fixed top-0 left-0 right-0 z-50 hidden md:block',
           'transition-all duration-500',
@@ -79,24 +81,12 @@ const LiquidGlassNavbar = () => {
                 ? 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.65) 50%, rgba(247,243,250,0.8) 100%)'
                 : 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.08) 100%)',
               boxShadow: onLight
-                ? `
-                  0 0 0 1px rgba(91,52,109,0.18),
-                  inset 0 1px 1px rgba(255,255,255,0.9),
-                  0 8px 32px rgba(91,52,109,0.18),
-                  0 2px 8px rgba(91,52,109,0.1)
-                `
-                : `
-                  0 0 0 1px rgba(255,255,255,0.08),
-                  inset 0 1px 1px rgba(255,255,255,0.1),
-                  inset 0 -1px 1px rgba(255,255,255,0.05),
-                  0 8px 32px rgba(0,0,0,0.4),
-                  0 2px 8px rgba(0,0,0,0.2)
-                `,
+                ? '0 0 0 1px rgba(91,52,109,0.18), inset 0 1px 1px rgba(255,255,255,0.9), 0 8px 32px rgba(91,52,109,0.18), 0 2px 8px rgba(91,52,109,0.1)'
+                : '0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
               backdropFilter: 'blur(30px) saturate(1.8)',
               WebkitBackdropFilter: 'blur(30px) saturate(1.8)',
             }}
           >
-            {/* Inner glass highlight */}
             <div
               className="pointer-events-none absolute inset-0 rounded-full"
               style={{
@@ -106,9 +96,8 @@ const LiquidGlassNavbar = () => {
               }}
             />
 
-            {/* Logo */}
-            <a
-              href="#home"
+            <Link
+              to="/"
               className={cn(
                 'relative z-10 flex items-center gap-3 rounded-full px-5 py-3 transition-colors',
                 onLight ? 'hover:bg-[#5b346d]/8' : 'hover:bg-white/[0.06]'
@@ -136,29 +125,42 @@ const LiquidGlassNavbar = () => {
               >
                 Aetheria
               </span>
-            </a>
+            </Link>
 
-            {/* Nav Links - Center */}
             <div className="relative z-10 flex flex-1 items-center justify-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className={cn(
-                    'rounded-full px-5 py-3 font-display text-sm font-medium transition-all',
-                    onLight
-                      ? 'text-[#674a70] hover:text-[#25152d] hover:bg-[#5b346d]/8'
-                      : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-                  )}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {NAV_LINKS.map((link) =>
+                link.href.startsWith('/#') ? (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className={cn(
+                      'rounded-full px-5 py-3 font-display text-sm font-medium transition-all',
+                      onLight
+                        ? 'text-[#674a70] hover:text-[#25152d] hover:bg-[#5b346d]/8'
+                        : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className={cn(
+                      'rounded-full px-5 py-3 font-display text-sm font-medium transition-all',
+                      onLight
+                        ? 'text-[#674a70] hover:text-[#25152d] hover:bg-[#5b346d]/8'
+                        : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </div>
 
-            {/* CTA Button - Right */}
-            <a
-              href="#contact"
+            <Link
+              to="/contact"
               className={cn(
                 'relative z-10 shrink-0 rounded-full px-8 py-3 font-display text-sm font-semibold transition-all',
                 onLight
@@ -172,7 +174,7 @@ const LiquidGlassNavbar = () => {
               }}
             >
               Get Started
-            </a>
+            </Link>
           </div>
         </div>
       </motion.nav>
@@ -181,7 +183,7 @@ const LiquidGlassNavbar = () => {
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', bounce: 0.15, duration: 0.6, delay: 0.3 }}
+        transition={{ type: 'spring', bounce: 0.15, duration: 0.6, delay: isHome ? 0.3 : 0 }}
         className={cn(
           'fixed top-0 left-0 right-0 z-50 md:hidden',
           'transition-all duration-500',
@@ -198,25 +200,13 @@ const LiquidGlassNavbar = () => {
                   ? 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.07) 100%)'
                   : 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.08) 100%)',
               boxShadow: onLight
-                ? `
-                  0 0 0 1px rgba(91,52,109,0.18),
-                  inset 0 1px 1px rgba(255,255,255,0.9),
-                  0 8px 32px rgba(91,52,109,0.18),
-                  0 2px 8px rgba(91,52,109,0.1)
-                `
-                : `
-                  0 0 0 1px rgba(255,255,255,0.08),
-                  inset 0 1px 1px rgba(255,255,255,0.1),
-                  inset 0 -1px 1px rgba(255,255,255,0.05),
-                  0 8px 32px rgba(0,0,0,0.4),
-                  0 2px 8px rgba(0,0,0,0.2)
-                `,
+                ? '0 0 0 1px rgba(91,52,109,0.18), inset 0 1px 1px rgba(255,255,255,0.9), 0 8px 32px rgba(91,52,109,0.18), 0 2px 8px rgba(91,52,109,0.1)'
+                : '0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -1px 1px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
               backdropFilter: 'blur(20px) saturate(1.8)',
               WebkitBackdropFilter: 'blur(20px) saturate(1.8)',
               borderRadius: isOpen && !onLight ? '28px' : '999px',
             }}
           >
-            {/* Inner glass highlight */}
             <div
               className="pointer-events-none absolute inset-0 rounded-[inherit]"
               style={{
@@ -226,8 +216,7 @@ const LiquidGlassNavbar = () => {
               }}
             />
 
-            {/* Logo */}
-            <a href="#home" className="relative z-10 flex items-center gap-2 rounded-full px-4 py-2">
+            <Link to="/" className="relative z-10 flex items-center gap-2 rounded-full px-4 py-2">
               <div className="relative flex h-7 w-7 items-center justify-center">
                 <div
                   className="h-4 w-4 rotate-45 rounded-[2px]"
@@ -250,9 +239,8 @@ const LiquidGlassNavbar = () => {
               >
                 Aetheria
               </span>
-            </a>
+            </Link>
 
-            {/* Hamburger */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className={cn(
@@ -289,7 +277,6 @@ const LiquidGlassNavbar = () => {
             className="fixed inset-0 z-40 md:hidden"
             style={{ top: '72px' }}
           >
-            {/* Backdrop */}
             <div
               className="absolute inset-0"
               style={{
@@ -300,7 +287,6 @@ const LiquidGlassNavbar = () => {
               onClick={() => setIsOpen(false)}
             />
 
-            {/* Menu content */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -315,26 +301,46 @@ const LiquidGlassNavbar = () => {
               }}
             >
               <div className="flex flex-col gap-1 p-3">
-                {NAV_LINKS.map((link, i) => (
-                  <motion.a
-                    key={link.label}
-                    href={link.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05, type: 'spring', bounce: 0.15 }}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center rounded-2xl px-5 py-4 font-display text-base font-medium text-white/60 transition-all hover:bg-white/[0.06] hover:text-white"
-                  >
-                    <span className="mr-3 font-mono text-[10px] text-brand-accent/50">0{i + 1}</span>
-                    {link.label}
-                  </motion.a>
-                ))}
+                {NAV_LINKS.map((link, i) =>
+                  link.href.startsWith('/#') ? (
+                    <motion.div
+                      key={link.label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05, type: 'spring', bounce: 0.15 }}
+                    >
+                      <Link
+                        to={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center rounded-2xl px-5 py-4 font-display text-base font-medium text-white/60 transition-all hover:bg-white/[0.06] hover:text-white"
+                      >
+                        <span className="mr-3 font-mono text-[10px] text-brand-accent/50">0{i + 1}</span>
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={link.label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05, type: 'spring', bounce: 0.15 }}
+                    >
+                      <Link
+                        to={link.href}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center rounded-2xl px-5 py-4 font-display text-base font-medium text-white/60 transition-all hover:bg-white/[0.06] hover:text-white"
+                      >
+                        <span className="mr-3 font-mono text-[10px] text-brand-accent/50">0{i + 1}</span>
+                        {link.label}
+                      </Link>
+                    </motion.div>
+                  )
+                )}
               </div>
 
-              {/* Mobile CTA */}
               <div className="border-t border-white/[0.06] p-3">
-                <a
-                  href="#contact"
+                <Link
+                  to="/contact"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center justify-center rounded-2xl px-5 py-4 font-display text-sm font-semibold text-brand-bg transition-all"
                   style={{
@@ -343,7 +349,7 @@ const LiquidGlassNavbar = () => {
                   }}
                 >
                   Get Started
-                </a>
+                </Link>
               </div>
             </motion.div>
           </motion.div>
