@@ -115,7 +115,7 @@ const ServiceCategory = () => {
   const heroContentY = useTransform(scrollYProgress, [0, 1], [0, 120]);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.dispatchEvent(new CustomEvent('aetheria:scroll-to-top'));
   }, [category]);
 
   const handleMouse = useCallback((e) => {

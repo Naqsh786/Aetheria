@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import HomePage from './pages/HomePage';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { CustomCursor } from './components/ui/CustomCursor';
 import Preloader from './components/ui/Preloader';
+import ScrollProgress from './components/ui/ScrollProgress';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
@@ -24,6 +26,17 @@ const SectionFallback = () => (
 
 let hasPreloaded = false;
 
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 
 function AppContent() {
@@ -35,7 +48,7 @@ function AppContent() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
     const lenis = new Lenis({
-      duration: 1.1,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 1.6,
@@ -43,11 +56,22 @@ function AppContent() {
     lenisRef.current = lenis;
 
     lenis.on('scroll', ScrollTrigger.update);
+    lenis.on('scroll', (e) => {
+      window.dispatchEvent(new CustomEvent('lenis-scroll', { detail: e }));
+    });
+
+    const handleScrollToTop = (e) => {
+      const { offset } = e.detail || {};
+      lenis.scrollTo(0, { offset: offset || 0, immediate: true });
+    };
+    window.addEventListener('aetheria:scroll-to-top', handleScrollToTop);
+
     const raf = (time) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      window.removeEventListener('aetheria:scroll-to-top', handleScrollToTop);
       gsap.ticker.remove(raf);
       lenis.destroy();
       lenisRef.current = null;
@@ -83,18 +107,15 @@ function AppContent() {
         const el = document.getElementById(id);
         if (el) {
           if (lenis) {
-            // Use Lenis for smooth scrolling, adding offset for fixed navbar
             lenis.scrollTo(el, { offset: -80, duration: 1.2 });
           } else {
             el.scrollIntoView({ behavior: 'smooth' });
           }
         } else if (attempts < 120) {
-          // Increase attempts to 120 frames (~2 seconds) for lazy-loaded pages
           attempts++;
           requestAnimationFrame(tryScroll);
         }
       };
-      // Give React router and lazy components a tiny moment to mount before searching
       setTimeout(tryScroll, 100);
     } else {
       if (lenis) {
@@ -115,15 +136,18 @@ function AppContent() {
     <div className="min-h-screen bg-brand-bg text-brand-text cursor-default">
       {!hasPreloaded && loading && <Preloader onDone={handlePreloaderDone} duration={3000} />}
       <CustomCursor />
+      <ScrollProgress lenisRef={lenisRef} />
       <Navbar />
-      <Suspense fallback={<SectionFallback />}>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/services/:category" element={<ServiceCategory />} />
-          <Route path="/services/:category/:serviceId" element={<ServiceDetail />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
-      </Suspense>
+      <AnimatePresence>
+        <Suspense fallback={<SectionFallback />} key={location.pathname}>
+          <Routes location={location}>
+            <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+            <Route path="/services/:category" element={<PageTransition><ServiceCategory /></PageTransition>} />
+            <Route path="/services/:category/:serviceId" element={<PageTransition><ServiceDetail /></PageTransition>} />
+            <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+          </Routes>
+        </Suspense>
+      </AnimatePresence>
       <Footer />
     </div>
   );

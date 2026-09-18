@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { Code2, Palette, Bot, Megaphone, Box, ChevronDown } from 'lucide-react';
+import MagneticButton from '../ui/MagneticButton';
 
 const SERVICE_CATEGORIES = [
   { label: 'Development', href: '/services/development', icon: Code2, color: '#a06cd5' },
@@ -46,7 +47,8 @@ const LiquidGlassNavbar = () => {
       setOnLight(light);
     };
 
-    const onScroll = () => {
+    const onScroll = (e) => {
+      if (e.detail) check();
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = null;
@@ -55,11 +57,13 @@ const LiquidGlassNavbar = () => {
     };
 
     check();
+    window.addEventListener('lenis-scroll', onScroll, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', check);
     return () => {
+      window.removeEventListener('lenis-scroll', onScroll);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', check);
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
@@ -273,22 +277,24 @@ const LiquidGlassNavbar = () => {
               )}
             </div>
 
-            <Link
-              to="/contact"
-              className={cn(
-                'relative z-10 shrink-0 rounded-full px-8 py-3 font-display text-sm font-semibold transition-all',
-                onLight
-                  ? 'text-white hover:shadow-[0_0_24px_rgba(160,108,213,0.5)]'
-                  : 'text-brand-bg hover:shadow-[0_0_20px_rgba(216,180,226,0.3)]'
-              )}
-              style={{
-                background: onLight
-                  ? 'linear-gradient(135deg, #a06cd5, #5b346d)'
-                  : 'linear-gradient(135deg, #D8B4E2, #a06cd5)',
-              }}
-            >
-              Get Started
-            </Link>
+            <MagneticButton strength={0.2}>
+              <Link
+                to="/contact"
+                className={cn(
+                  'relative z-10 shrink-0 rounded-full px-8 py-3 font-display text-sm font-semibold transition-all block',
+                  onLight
+                    ? 'text-white hover:shadow-[0_0_24px_rgba(160,108,213,0.5)]'
+                    : 'text-brand-bg hover:shadow-[0_0_20px_rgba(216,180,226,0.3)]'
+                )}
+                style={{
+                  background: onLight
+                    ? 'linear-gradient(135deg, #a06cd5, #5b346d)'
+                    : 'linear-gradient(135deg, #D8B4E2, #a06cd5)',
+                }}
+              >
+                Get Started
+              </Link>
+            </MagneticButton>
           </div>
         </div>
       </motion.nav>
@@ -495,17 +501,19 @@ const LiquidGlassNavbar = () => {
               </div>
 
               <div className="border-t border-white/[0.06] p-3">
-                <Link
-                  to="/contact"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center rounded-2xl px-5 py-4 font-display text-sm font-semibold text-brand-bg transition-all"
-                  style={{
-                    background: 'linear-gradient(135deg, #D8B4E2, #a06cd5)',
-                    boxShadow: '0 4px 20px rgba(216,180,226,0.25)',
-                  }}
-                >
-                  Get Started
-                </Link>
+                <MagneticButton strength={0.15}>
+                  <Link
+                    to="/contact"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-center rounded-2xl px-5 py-4 font-display text-sm font-semibold text-brand-bg transition-all block"
+                    style={{
+                      background: 'linear-gradient(135deg, #D8B4E2, #a06cd5)',
+                      boxShadow: '0 4px 20px rgba(216,180,226,0.25)',
+                    }}
+                  >
+                    Get Started
+                  </Link>
+                </MagneticButton>
               </div>
             </motion.div>
           </motion.div>
