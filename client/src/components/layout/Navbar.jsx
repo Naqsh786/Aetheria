@@ -2,10 +2,19 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils';
+import { Code2, Palette, Bot, Megaphone, Box, ChevronDown } from 'lucide-react';
+
+const SERVICE_CATEGORIES = [
+  { label: 'Development', href: '/services/development', icon: Code2, color: '#a06cd5' },
+  { label: 'Design', href: '/services/design', icon: Palette, color: '#D8B4E2' },
+  { label: 'AI & Automation', href: '/services/ai-automation', icon: Bot, color: '#7a4fa0' },
+  { label: 'Marketing', href: '/services/marketing', icon: Megaphone, color: '#c49bda' },
+  { label: '3D', href: '/services/3d', icon: Box, color: '#D8B4E2' },
+];
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Services', href: '/services' },
+  { label: 'Services', href: '#', dropdown: true },
   { label: 'Work', href: '/#work' },
   { label: 'Process', href: '/#process' },
   { label: 'Contact', href: '/contact' },
@@ -15,6 +24,10 @@ const LiquidGlassNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [onLight, setOnLight] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const dropdownTimeout = useRef(null);
   const navRef = useRef(null);
   const location = useLocation();
   const isHome = location.pathname === '/';
@@ -57,7 +70,32 @@ const LiquidGlassNavbar = () => {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  // Mobile menu auto-closes via onClick handlers on each link
+  // Close dropdown on route change
+  useEffect(() => {
+    setDropdownOpen(false);
+    setIsOpen(false);
+    setMobileServicesOpen(false);
+  }, [location.pathname]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleDropdownEnter = () => {
+    if (dropdownTimeout.current) clearTimeout(dropdownTimeout.current);
+    setDropdownOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeout.current = setTimeout(() => setDropdownOpen(false), 200);
+  };
 
   return (
     <>
@@ -129,19 +167,95 @@ const LiquidGlassNavbar = () => {
 
             <div className="relative z-10 flex flex-1 items-center justify-center gap-1">
               {NAV_LINKS.map((link) =>
-                link.href.startsWith('/#') ? (
-                  <Link
+                link.dropdown ? (
+                  /* ── Services Dropdown ── */
+                  <div
                     key={link.label}
-                    to={link.href}
-                    className={cn(
-                      'rounded-full px-5 py-3 font-display text-sm font-medium transition-all',
-                      onLight
-                        ? 'text-[#674a70] hover:text-[#25152d] hover:bg-[#5b346d]/8'
-                        : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-                    )}
+                    ref={dropdownRef}
+                    className="relative"
+                    onMouseEnter={handleDropdownEnter}
+                    onMouseLeave={handleDropdownLeave}
                   >
-                    {link.label}
-                  </Link>
+                    <button
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className={cn(
+                        'flex items-center gap-1 rounded-full px-5 py-3 font-display text-sm font-medium transition-all',
+                        onLight
+                          ? 'text-[#674a70] hover:text-[#25152d] hover:bg-[#5b346d]/8'
+                          : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
+                      )}
+                    >
+                      {link.label}
+                      <motion.div
+                        animate={{ rotate: dropdownOpen ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </motion.div>
+                    </button>
+
+                    <AnimatePresence>
+                      {dropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-2xl overflow-hidden"
+                          style={{
+                            background: onLight
+                              ? 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(247,243,250,0.95) 100%)'
+                              : 'linear-gradient(180deg, rgba(20,18,25,0.97) 0%, rgba(15,13,18,0.98) 100%)',
+                            boxShadow: onLight
+                              ? '0 0 0 1px rgba(91,52,109,0.15), 0 20px 60px rgba(91,52,109,0.25), 0 4px 16px rgba(91,52,109,0.12)'
+                              : '0 0 0 1px rgba(255,255,255,0.08), 0 20px 60px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.3)',
+                            backdropFilter: 'blur(40px) saturate(1.8)',
+                            WebkitBackdropFilter: 'blur(40px) saturate(1.8)',
+                          }}
+                        >
+                          <div className="p-2">
+                            {SERVICE_CATEGORIES.map((cat, i) => {
+                              const CatIcon = cat.icon;
+                              return (
+                                <motion.div
+                                  key={cat.label}
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: i * 0.04, duration: 0.3 }}
+                                >
+                                  <Link
+                                    to={cat.href}
+                                    onClick={() => setDropdownOpen(false)}
+                                    className={cn(
+                                      'flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 group',
+                                      onLight
+                                        ? 'hover:bg-[#5b346d]/8'
+                                        : 'hover:bg-white/[0.06]'
+                                    )}
+                                  >
+                                    <div
+                                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-110"
+                                      style={{ background: `${cat.color}18` }}
+                                    >
+                                      <CatIcon className="w-4 h-4" style={{ color: cat.color }} />
+                                    </div>
+                                    <span className={cn(
+                                      'font-display text-sm font-medium transition-colors',
+                                      onLight
+                                        ? 'text-[#674a70] group-hover:text-[#25152d]'
+                                        : 'text-white/60 group-hover:text-white'
+                                    )}>
+                                      {cat.label}
+                                    </span>
+                                  </Link>
+                                </motion.div>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 ) : (
                   <Link
                     key={link.label}
@@ -302,21 +416,63 @@ const LiquidGlassNavbar = () => {
             >
               <div className="flex flex-col gap-1 p-3">
                 {NAV_LINKS.map((link, i) =>
-                  link.href.startsWith('/#') ? (
+                  link.dropdown ? (
+                    /* ── Mobile Services Accordion ── */
                     <motion.div
                       key={link.label}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05, type: 'spring', bounce: 0.15 }}
                     >
-                      <Link
-                        to={link.href}
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center rounded-2xl px-5 py-4 font-display text-base font-medium text-white/60 transition-all hover:bg-white/[0.06] hover:text-white"
+                      <button
+                        onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                        className="flex items-center justify-between w-full rounded-2xl px-5 py-4 font-display text-base font-medium text-white/60 transition-all hover:bg-white/[0.06] hover:text-white"
                       >
-                        <span className="mr-3 font-mono text-[10px] text-brand-accent/50">0{i + 1}</span>
-                        {link.label}
-                      </Link>
+                        <div className="flex items-center">
+                          <span className="mr-3 font-mono text-[10px] text-brand-accent/50">0{i + 1}</span>
+                          {link.label}
+                        </div>
+                        <motion.div
+                          animate={{ rotate: mobileServicesOpen ? 180 : 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <ChevronDown className="w-4 h-4 text-white/40" />
+                        </motion.div>
+                      </button>
+
+                      <AnimatePresence>
+                        {mobileServicesOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-10 pb-2 space-y-0.5">
+                              {SERVICE_CATEGORIES.map((cat) => {
+                                const CatIcon = cat.icon;
+                                return (
+                                  <Link
+                                    key={cat.label}
+                                    to={cat.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center gap-3 rounded-xl px-4 py-3 transition-all hover:bg-white/[0.06]"
+                                  >
+                                    <div
+                                      className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                                      style={{ background: `${cat.color}18` }}
+                                    >
+                                      <CatIcon className="w-3.5 h-3.5" style={{ color: cat.color }} />
+                                    </div>
+                                    <span className="font-display text-sm text-white/50">{cat.label}</span>
+                                  </Link>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   ) : (
                     <motion.div

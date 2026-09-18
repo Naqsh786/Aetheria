@@ -11,9 +11,10 @@ import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Services = lazy(() => import('./pages/Services'));
+
 const Contact = lazy(() => import('./pages/Contact'));
 const ServiceCategory = lazy(() => import('./pages/ServiceCategory'));
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
 
 const SectionFallback = () => (
   <div className="flex h-[40vh] items-center justify-center bg-brand-bg">
@@ -118,8 +119,8 @@ function AppContent() {
       <Suspense fallback={<SectionFallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/services" element={<Services />} />
           <Route path="/services/:category" element={<ServiceCategory />} />
+          <Route path="/services/:category/:serviceId" element={<ServiceDetail />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>
       </Suspense>
