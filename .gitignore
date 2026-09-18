@@ -1,0 +1,18 @@
+# opencode local skills & data
+.agents/
+.kilo/
+
+# Client app (already has its own .gitignore)
+client/node_modules
+client/dist
+client/dist-ssr
+client/*.local
+client/.vscode/*
+!client/.vscode/extensions.json
+client/.idea
+client/.DS_Store
+client/*.suo
+client/*.ntvs*
+client/*.njsproj
+client/*.sln
+client/*.sw?
